@@ -141,4 +141,4 @@ describe('clearAll functionality', () => {
     await store.clearAll();
     expect(store.all()).toEqual({});
   });
-});}
+});
