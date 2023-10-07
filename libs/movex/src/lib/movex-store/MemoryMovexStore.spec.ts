@@ -101,3 +101,52 @@ describe('Concurrency', () => {
     expect(actual.state[0].count).toBe(21);
   });
 });
+
+describe('clearAll functionality', () => {
+  test('clearAll with an empty store', async () => {
+    const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    store.clearAll();
+    const actual = await store.getAllKeys();
+    expect(actual).toEqual([]);
+  });
+
+  test('newly created items are not there after clearAll', async () => {
+    const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    await store.create('counter:1', { count: 1 }).resolveUnwrap();
+    store.clearAll();
+    const actual = await store.get('counter:1').resolveUnwrap();
+    expect(actual).toBeUndefined();
+  });
+
+  test('clearAll after items are updated', async () => {
+    const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    await store.create('counter:1', { count: 1 }).resolveUnwrap();
+    store.updateState('counter:1', (prev) => ({ ...prev, count: prev.count + 1 }));
+    store.clearAll();
+    const actual = await store.get('counter:1').resolveUnwrap();
+    expect(actual).toBeUndefined();
+  });
+
+  test('clearAll with multiple items', async () => {
+    const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    await store.create('counter:1', { count: 1 }).resolveUnwrap();
+    await store.create('counter:2', { count: 2 }).resolveUnwrap();
+    store.clearAll();
+    const actual1 = await store.get('counter:1').resolveUnwrap();
+    const actual2 = await store.get('counter:2').resolveUnwrap();
+    expect(actual1).toBeUndefined();
+    expect(actual2).toBeUndefined();
+  });
+
+  test('clearAll does not affect other stores', async () => {
+    const store1 = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    const store2 = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    await store1.create('counter:1', { count: 1 }).resolveUnwrap();
+    await store2.create('counter:1', { count: 1 }).resolveUnwrap();
+    store1.clearAll();
+    const actual1 = await store1.get('counter:1').resolveUnwrap();
+    const actual2 = await store2.get('counter:1').resolveUnwrap();
+    expect(actual1).toBeUndefined();
+    expect(actual2.state[0].count).toBe(1);
+  });
+});
