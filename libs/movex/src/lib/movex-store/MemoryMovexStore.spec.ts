@@ -101,3 +101,29 @@ describe('Concurrency', () => {
     expect(actual.state[0].count).toBe(21);
   });
 });
+
+describe('clearAll functionality', () => {
+  test('clearAll with an empty store', async () => {
+    const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    store.clearAll();
+    const actual = await store.getAll().resolveUnwrap();
+    expect(actual).toEqual({});
+  });
+
+  test('newly created items are not there after clearAll', async () => {
+    const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    await store.create('counter:1', { count: 1 }).resolveUnwrap();
+    store.clearAll();
+    const actual = await store.get('counter:1').resolveUnwrap();
+    expect(actual).toBeUndefined();
+  });
+
+  test('clearAll after items are updated', async () => {
+    const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    await store.create('counter:1', { count: 1 }).resolveUnwrap();
+    store.updateState('counter:1', (prev) => ({ ...prev, count: prev.count + 1 }));
+    store.clearAll();
+    const actual = await store.get('counter:1').resolveUnwrap();
+    expect(actual).toBeUndefined();
+  });
+});
