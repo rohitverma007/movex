@@ -340,7 +340,7 @@ export class MemoryMovexStore<
 
   clearAll() {
     this.local = {};
-
+    this.locks = {};
     return AsyncOk.EMPTY;
   }
 
