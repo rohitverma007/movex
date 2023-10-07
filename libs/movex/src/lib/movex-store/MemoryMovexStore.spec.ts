@@ -106,8 +106,8 @@ describe('clearAll functionality', () => {
   test('clearAll with an empty store', async () => {
     const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
     store.clearAll();
-    const actual = await store.getAll().resolveUnwrap();
-    expect(actual).toEqual({});
+    const actual = await store.getAllKeys();
+    expect(actual).toEqual([]);
   });
 
   test('newly created items are not there after clearAll', async () => {
