@@ -126,4 +126,27 @@ describe('clearAll functionality', () => {
     const actual = await store.get('counter:1').resolveUnwrap();
     expect(actual).toBeUndefined();
   });
+
+  test('clearAll with multiple items', async () => {
+    const store = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    await store.create('counter:1', { count: 1 }).resolveUnwrap();
+    await store.create('counter:2', { count: 2 }).resolveUnwrap();
+    store.clearAll();
+    const actual1 = await store.get('counter:1').resolveUnwrap();
+    const actual2 = await store.get('counter:2').resolveUnwrap();
+    expect(actual1).toBeUndefined();
+    expect(actual2).toBeUndefined();
+  });
+
+  test('clearAll does not affect other stores', async () => {
+    const store1 = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    const store2 = new MemoryMovexStore<{ counter: () => { count: number } }>();
+    await store1.create('counter:1', { count: 1 }).resolveUnwrap();
+    await store2.create('counter:1', { count: 1 }).resolveUnwrap();
+    store1.clearAll();
+    const actual1 = await store1.get('counter:1').resolveUnwrap();
+    const actual2 = await store2.get('counter:1').resolveUnwrap();
+    expect(actual1).toBeUndefined();
+    expect(actual2.state[0].count).toBe(1);
+  });
 });
